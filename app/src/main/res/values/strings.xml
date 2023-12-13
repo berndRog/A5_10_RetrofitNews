@@ -1,0 +1,10 @@
+<resources>
+  <string name="app_name">RetrofitNews</string>
+  <string name="headlines">Schlagzeilen</string>
+  <string name="searchnews">Suche</string>
+  <string name="name">Name</string>
+  <string name="email">Mail</string>
+  <string name="phone">Telefon</string>
+  <string name="save">Speichern</string>
+  <string name="back">Zurück</string>
+</resources>
