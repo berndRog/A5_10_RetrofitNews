@@ -16,6 +16,7 @@ import de.rogallab.mobile.ui.news.HeadLinesScreen
 import de.rogallab.mobile.ui.news.SearchNewsScreen
 import de.rogallab.mobile.ui.news.ArticleScreen
 import de.rogallab.mobile.ui.news.NewsViewModel
+import de.rogallab.mobile.ui.news.SavedArticlesScreen
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -41,6 +42,12 @@ fun AppNavHost(
       }
       composable(route = NavScreen.SearchNews.route) {
          SearchNewsScreen(
+            viewModel = viewModel,
+            navController = navHostController
+         )
+      }
+      composable(route = NavScreen.SavedArticles.route) {
+         SavedArticlesScreen(
             viewModel = viewModel,
             navController = navHostController
          )

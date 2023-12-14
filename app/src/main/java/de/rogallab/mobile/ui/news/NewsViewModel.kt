@@ -17,17 +17,15 @@ import de.rogallab.mobile.domain.utilities.logError
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,29 +43,24 @@ class NewsViewModel @Inject constructor(
    var _searchText: String by mutableStateOf(value = "")
    val searchText
       get() = _searchText
-
    fun onSearchTextChange(value: String) {
       if (value != _searchText) _searchText = value
    }
 
    var article: Article? = null
 
-   // Coroutine ExceptionHandler
+   // Coroutines ExceptionHandler, Context, Scope
    private val _exceptionHandler = CoroutineExceptionHandler { _, exception ->
       exception.localizedMessage?.let {
          logError(tag, it)
-         //uiStateFlowEverything.value = UiState.Error(it, true)
+         _stateFlowError.value = UiState.Error(it, true)
       } ?: run {
          exception.stackTrace.forEach {
             logError(tag, it.toString())
          }
       }
    }
-
-   // Coroutine Context
    private val _coroutineContext = SupervisorJob() + _dispatcher + _exceptionHandler
-
-   // Coroutine Scope
    private val _coroutineScope = CoroutineScope(_coroutineContext)
 
    override fun onCleared() {
@@ -77,13 +70,16 @@ class NewsViewModel @Inject constructor(
       _coroutineContext.cancel()
    }
 
+   var _stateFlowError: MutableStateFlow<UiState<*>> = MutableStateFlow(UiState.Empty)
+   val stateFlowError: StateFlow<UiState<*>>
+      get() = _stateFlowError
+
    var country = "de"
    var headlinesPage = 1
    var everythingPage = 1
 
    var stateFlowHeadlines: StateFlow<UiState<News>> = MutableStateFlow(UiState.Empty)
       private set
-
    fun readHeadlines(country: String): Unit {
       logDebug(tag, "readHeadlines")
       stateFlowHeadlines = _useCases.fetchHeadlines(country, headlinesPage)
@@ -93,7 +89,6 @@ class NewsViewModel @Inject constructor(
             UiState.Empty
          )
    }
-
    init {
       readHeadlines(country)
    }
@@ -102,7 +97,6 @@ class NewsViewModel @Inject constructor(
       MutableStateFlow(UiState.Empty)
    val stateFlowEverything: StateFlow<UiState<News>>
       get() = _stateFlowEverything
-
    fun readEverything(query: String?): Unit {
       logDebug(tag, "readEverything $query")
       _coroutineScope.launch {
@@ -113,15 +107,16 @@ class NewsViewModel @Inject constructor(
       }
    }
 
-   private var _stateFlowArticle: MutableStateFlow<UiState<News>> =
-      MutableStateFlow(UiState.Empty)
-   val stateFlowArticle: StateFlow<UiState<News>>
-      get() = _stateFlowArticle
-
-   fun readDbArticles(): Unit {
-      logDebug(tag,"readDbArticles")
-      //_useCases.readSavedArticles().stateIn()
-   }
+   var stateFlowArticles: StateFlow<UiState<List<Article>>> = flow {
+      _useCases.readSavedArticles().collect { it: UiState<List<Article>> ->
+         emit(it)
+      }
+   }.stateIn(
+      viewModelScope,
+      SharingStarted.WhileSubscribed(1_000),
+      UiState.Empty
+   )
+      private set
 
    fun upsert(article: Article) {
       try {
@@ -133,21 +128,36 @@ class NewsViewModel @Inject constructor(
                if (!result) {
                   val message = "Error in upsert()"
                   logError(tag, message)
-                  _stateFlowArticle.value = UiState.Error(message, false, true)
+                  _stateFlowError.value = UiState.Error(message, false, true)
                }
             }
          }
       } catch (e: Exception) {
          val message = e.localizedMessage ?: e.stackTraceToString()
          logError(tag, message)
-         _stateFlowArticle.value = UiState.Error(message, false, true)
+         _stateFlowError.value = UiState.Error(message, false, true)
       }
    }
 
-   fun delete(article: Article): Job =
-      viewModelScope.launch(Dispatchers.IO){
-         logDebug(tag,"delete article")
-         _repository.delete(article)
+   fun delete(article: Article) {
+      try {
+         article?.let {
+            _coroutineScope.launch {
+               val result = _coroutineScope.async {
+                  _repository.delete(it)
+               }.await()
+               if (!result) {
+                  val message = "Error in delete()"
+                  logError(tag, message)
+                  _stateFlowError.value = UiState.Error(message, false, true)
+               }
+            }
+         }
       }
-
+      catch (e: Exception) {
+         val message = e.localizedMessage ?: e.stackTraceToString()
+         logError(tag, message)
+         _stateFlowError.value = UiState.Error(message, false, true)
+      }
+   }
 }

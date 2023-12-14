@@ -126,7 +126,7 @@ fun SearchNewsScreen(
             value = viewModel.searchText,
             onValueChange = { viewModel.onSearchTextChange(it) },
             label = {
-               Text(text = stringResource(R.string.name))
+               Text(text = stringResource(R.string.searchtext))
             },
             leadingIcon = {
                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search News")

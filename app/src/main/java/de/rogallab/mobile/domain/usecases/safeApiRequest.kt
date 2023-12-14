@@ -4,6 +4,7 @@ import de.rogallab.mobile.data.models.News
 import de.rogallab.mobile.domain.UiState
 import de.rogallab.mobile.domain.utilities.logError
 import de.rogallab.mobile.domain.utilities.logVerbose
+import de.rogallab.mobile.domain.utilities.max
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
@@ -95,12 +96,9 @@ private fun <T> logResponse(
    logVerbose(tag, "Response Body")
    if (response.body() is News) {
       val news = response.body() as News
-      val text = response.body().toString().substring(0,200)
-      logVerbose(tag, "Response Body   $text")
-      logVerbose(tag, "   NewsApi.articles.size ${news.articles.size}")
-      logVerbose(tag, "   NewsApi.status        $news.status}")
-      logVerbose(tag, "   NewsApi.totalResults  $news.totalResults}")
+      logVerbose(tag, "   articles.size ${news.articles.size}")
+      logVerbose(tag, "   totalResults  $news.totalResults}")
    }
-   logVerbose(tag, "   Response Status Code ${response.code()}")
-   logVerbose(tag, "   Response Status Message ${response.message()}")
+   logVerbose(tag, "   Status Code ${response.code().toString().max(100)}")
+   logVerbose(tag, "   Status Message ${response.message().toString().max(100)}")
 }

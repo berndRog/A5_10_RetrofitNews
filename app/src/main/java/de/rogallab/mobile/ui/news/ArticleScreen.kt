@@ -7,28 +7,35 @@ import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.Bottom
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import de.rogallab.mobile.R
+import de.rogallab.mobile.domain.utilities.logDebug
 import de.rogallab.mobile.domain.utilities.logInfo
 import de.rogallab.mobile.ui.navigation.AppNavigationBar
 import de.rogallab.mobile.ui.navigation.NavScreen
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -43,16 +50,17 @@ fun ArticleScreen(
    val article = viewModel.article!!
 
    val snackbarHostState = remember { SnackbarHostState() }
+   val coroutineScope = rememberCoroutineScope()
 
    Scaffold(
       topBar = {
          TopAppBar(
-            title = { Text(stringResource(R.string.searchnews)) },
+            title = { Text(stringResource(R.string.readarticle)) },
             navigationIcon = {
                IconButton(onClick = {
                   logInfo(tag, "Reverse Navigation (Up)")
                   navController.navigate(route = NavScreen.Headlines.route) {
-                     popUpTo(route = NavScreen.Headlines.route) { inclusive = true }
+                     popUpTo(route = NavScreen.SearchNews.route) { inclusive = true }
                   }
                }) {
                   Icon(imageVector = Icons.Default.ArrowBack,
@@ -60,6 +68,23 @@ fun ArticleScreen(
                }
             }
          )
+      },
+      floatingActionButton = {
+         FloatingActionButton(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            onClick = {
+               // FAB clicked -> InputScreen initialized
+               logDebug(tag, "Forward Navigation: FAB clicked")
+               viewModel.upsert(article)
+               coroutineScope.launch {
+                  val snackbarResult = snackbarHostState.showSnackbar(
+                     message = "Artikel gespeichert"
+                  )
+               }
+            }
+         ) {
+            Icon(Icons.Default.Add, "Add a contact")
+         }
       },
       bottomBar = {
          AppNavigationBar(navController)
@@ -74,17 +99,6 @@ fun ArticleScreen(
       }) { paddingValues ->
 
       Column(modifier = Modifier.padding(paddingValues = paddingValues)) {
-
-         FilledTonalButton(
-            modifier = Modifier
-               .padding(horizontal = 0.dp)
-               .padding( bottom=8.dp).fillMaxWidth(),
-            onClick = {
-               viewModel.upsert(article)
-            }
-         ) {
-            Text(text = "Speichern")
-         }
          AndroidView(
             factory = { context ->
                WebView(context).apply {
@@ -100,10 +114,6 @@ fun ArticleScreen(
          }, update = {
             it.loadUrl(article.url)
          })
-
-
-
-
       }
    }
 }

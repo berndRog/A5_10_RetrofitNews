@@ -55,7 +55,10 @@ fun HeadLinesScreen(
    val tag = "ok>HeadlinesScreen    ."
 
    val stateFlowHeadlines by viewModel.stateFlowHeadlines.collectAsStateWithLifecycle()
-   LogUiStates(stateFlowHeadlines,"UiState News", tag )
+   LogUiStates(stateFlowHeadlines, "UiState News", tag)
+
+   val stateFlowError by viewModel.stateFlowError.collectAsStateWithLifecycle()
+   LogUiStates(stateFlowError, "UiState Error", tag)
 
    val snackbarHostState = remember { SnackbarHostState() }
 
@@ -92,23 +95,24 @@ fun HeadLinesScreen(
          .padding(paddingValues)
          .padding(horizontal = 8.dp)) {
 
-         when (stateFlowHeadlines) {
-
-            is UiState.Loading -> {
-               logDebug(tag, "Loading...")
-               Column(
-                  modifier = Modifier
-                     .padding(paddingValues = paddingValues)
-                     .padding(horizontal = 8.dp)
-                     .fillMaxSize(),
-                  verticalArrangement = Arrangement.Center,
-                  horizontalAlignment = Alignment.CenterHorizontally
-               ) {
-                  CircularProgressIndicator(modifier = Modifier.size(160.dp))
-               }
+         if (stateFlowHeadlines is UiState.Loading) {
+            logDebug(tag, "Loading...")
+            Column(
+               modifier = Modifier
+                  .padding(paddingValues = paddingValues)
+                  .padding(horizontal = 8.dp)
+                  .fillMaxSize(),
+               verticalArrangement = Arrangement.Center,
+               horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+               CircularProgressIndicator(modifier = Modifier.size(160.dp))
             }
-
-            is UiState.Success -> {
+         } else if (
+            stateFlowHeadlines is UiState.Success ||
+            stateFlowHeadlines is UiState.Error ||
+            stateFlowError is UiState.Error
+         ) {
+            if (stateFlowHeadlines is UiState.Success)
                (stateFlowHeadlines as UiState.Success).data?.let { news: News ->
                   logDebug(tag, "Headlines Success ${news.totalResults}")
                   news.articles.let { articles: List<Article> ->
@@ -121,7 +125,7 @@ fun HeadLinesScreen(
                            Column(modifier = Modifier
                               .padding()
                               .clickable {
-                                 logVerbose(tag,"${article.url}")
+                                 logVerbose(tag, "${article.url}")
                                  viewModel.article = article
                                  navController.navigate(NavScreen.Article.route)
                               }
@@ -139,23 +143,32 @@ fun HeadLinesScreen(
                      }
                   }
                }
-            }
-
-            is UiState.Error -> {
-               HandleUiStateError(
-                  uiStateFlow = stateFlowHeadlines,
-                  actionLabel = "Ok",
-                  onErrorAction = { },
-                  snackbarHostState = snackbarHostState,
-                  navController = navController,
-                  routePopBack = NavScreen.Headlines.route,
-                  onUiStateFlowChange = { },
-                  tag = tag
-               )
-
-            }
-            else -> {}
+         }
+         if (stateFlowHeadlines is UiState.Error) {
+            HandleUiStateError(
+               uiStateFlow = stateFlowHeadlines,
+               actionLabel = "Ok",
+               onErrorAction = { },
+               snackbarHostState = snackbarHostState,
+               navController = navController,
+               routePopBack = NavScreen.Headlines.route,
+               onUiStateFlowChange = { },
+               tag = tag
+            )
+         }
+         if (stateFlowError is UiState.Error) {
+            HandleUiStateError(
+               uiStateFlow = stateFlowError,
+               actionLabel = "Ok",
+               onErrorAction = { },
+               snackbarHostState = snackbarHostState,
+               navController = navController,
+               routePopBack = NavScreen.Headlines.route,
+               onUiStateFlowChange = { },
+               tag = tag
+            )
          }
       }
+
    }
 }

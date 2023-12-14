@@ -8,8 +8,9 @@ import de.rogallab.mobile.domain.utilities.logDebug
 suspend fun showErrorMessage(
    snackbarHostState: SnackbarHostState, // State ↓
    errorMessage: String,                 // State ↓
-   actionLabel: String?,                 // State ↓
-   onErrorAction: () -> Unit             // Event ↑
+   actionLabel: String? = null,          // State ↓
+   onErrorAction: () -> Unit = { },      // Event ↑
+   duration: SnackbarDuration = SnackbarDuration.Short
 ) {
 
    val tag = "ok>ShowErrorMessage   ."
@@ -19,7 +20,7 @@ suspend fun showErrorMessage(
       message = errorMessage,
       actionLabel = actionLabel,
       withDismissAction = false,
-      duration = SnackbarDuration.Indefinite
+      duration = duration
    )
    if (snackbarResult == SnackbarResult.ActionPerformed) {
       logDebug(tag, "SnackbarResult.ActionPerformed")

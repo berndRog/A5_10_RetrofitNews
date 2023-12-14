@@ -39,14 +39,14 @@ sealed class NavScreen(
 
    data object SearchNews:  NavScreen(
       route = "everything",
-      title = "Suche Artikel",
+      title = "Suchen",
       selectedIcon = Icons.Outlined.Search,
       unSelectedIcon = Icons.Filled.Search,
    )
 
    data object Article:  NavScreen(
       route = "article",
-      title ="Artikel anzeigen",
+      title ="Anzeigen",
       selectedIcon = Icons.Outlined.Article,
       unSelectedIcon = Icons.Filled.Article,
    )
