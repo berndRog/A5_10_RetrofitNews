@@ -7,11 +7,11 @@ import android.os.Build
 
 class NetworkConnection(
    context: Context
-) {
+): INetworkConnection {
    private val connectivityManager =
       context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-   fun isOnline(): Boolean {
+   override fun isOnline(): Boolean {
       val network = connectivityManager.activeNetwork ?: return false
       val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
       // has internet capability and a transport that supports internet

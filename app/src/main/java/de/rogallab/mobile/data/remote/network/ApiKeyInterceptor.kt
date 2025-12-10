@@ -4,7 +4,10 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class ApiKeyInterceptor(
-   private val _keyProvider: () -> String?      // API key is supplied dynamically
+   private val _keyProvider: () -> String?,
+   private val _mode: ApiKeyMode = ApiKeyMode.HEADER,
+   private val _headerName: String = "X-API-Key",
+   private val _queryName: String = "apiKey"
 ) : Interceptor {
 
    override fun intercept(chain: Interceptor.Chain): Response {
@@ -14,12 +17,27 @@ class ApiKeyInterceptor(
       val apiKey = _keyProvider()?.takeIf { it.isNotBlank() }
          ?: return chain.proceed(original)
 
-      // Attach API key header to the outgoing request
-      val modifiedRequest = original.newBuilder()
-         .header("X-API-Key", apiKey)              // custom API key header
-         // .header("X-Session", getServerSession())  // optional session if needed
-         .build()
+      return when (_mode) {
 
-      return chain.proceed(modifiedRequest)
+         ApiKeyMode.HEADER -> {
+            // Attach API key header to the outgoing request
+            val modified = original.newBuilder()
+               .header(_headerName, apiKey)
+               .build()
+            chain.proceed(modified)
+         }
+
+         ApiKeyMode.QUERY -> {
+            // Attach API key as a query parameter to the outgoing request
+            val originalUrl = original.url
+            val newUrl = originalUrl.newBuilder()
+               .addQueryParameter(_queryName, apiKey)
+               .build()
+            val modified = original.newBuilder()
+               .url(newUrl)
+               .build()
+            chain.proceed(modified)
+         }
+      }
    }
 }

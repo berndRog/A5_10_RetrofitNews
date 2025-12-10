@@ -9,7 +9,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
 fun createRetrofit(
-   okHttpClient: OkHttpClient,
+   baseUrl: String = Globals.BASE_URL,
+   okHttpClient: OkHttpClient
 ) : Retrofit {
    logDebug("<-Retrofit", "create()")
 
@@ -22,7 +23,7 @@ fun createRetrofit(
    val contentType = "application/json".toMediaType()
 
    return Retrofit.Builder()
-      .baseUrl(Globals.BASE_URL)
+      .baseUrl(baseUrl)
       .client(okHttpClient)
       .addConverterFactory(json.asConverterFactory(contentType))
       .build()

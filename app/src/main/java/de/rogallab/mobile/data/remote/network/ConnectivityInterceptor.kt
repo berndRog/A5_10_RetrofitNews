@@ -5,7 +5,7 @@ import okhttp3.Response
 import java.io.IOException
 
 class ConnectivityInterceptor(
-   private val _networkConnection: NetworkConnection
+   private val _networkConnection: INetworkConnection
 ) : Interceptor {
 
    override fun intercept(chain: Interceptor.Chain): Response {

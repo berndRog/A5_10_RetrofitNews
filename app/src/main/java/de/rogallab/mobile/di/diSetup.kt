@@ -6,7 +6,6 @@ import coil.ImageLoader
 import de.rogallab.mobile.ApiKeyStore
 import de.rogallab.mobile.BearerTokenStore
 import de.rogallab.mobile.Globals
-import de.rogallab.mobile.MainApplication
 import de.rogallab.mobile.createImageLoader
 import de.rogallab.mobile.data.IArticleDao
 import de.rogallab.mobile.data.INewsApi
@@ -14,6 +13,7 @@ import de.rogallab.mobile.data.local.database.AppDatabase
 import de.rogallab.mobile.data.remote.network.ApiKeyInterceptor
 import de.rogallab.mobile.data.remote.network.BearerTokenInterceptor
 import de.rogallab.mobile.data.remote.network.ConnectivityInterceptor
+import de.rogallab.mobile.data.remote.network.INetworkConnection
 import de.rogallab.mobile.data.remote.network.NetworkConnection
 import de.rogallab.mobile.data.remote.network.createOkHttpClient
 import de.rogallab.mobile.data.remote.network.createRetrofit
@@ -65,13 +65,13 @@ val defModules: Module = module {
 
    // remote OkHttp/Retrofit Webservice ---------------------------------------
    logInfo(tag, "single    -> NetworkConnection")
-   single<NetworkConnection> {
+   single<INetworkConnection> {
       NetworkConnection(context = androidContext())
    }
    logInfo(tag, "single    -> ConnectivityInterceptor")
    single<ConnectivityInterceptor> {
       ConnectivityInterceptor(
-         _networkConnection = get<NetworkConnection>()
+         _networkConnection = get<INetworkConnection>()
       )
    }
    logInfo(tag, "single    -> InterceptorApiKey")
@@ -96,15 +96,16 @@ val defModules: Module = module {
    logInfo(tag, "single    -> OkHttpClient")
    single<OkHttpClient> {
       createOkHttpClient(
-         bearerToken = get<BearerTokenInterceptor>(),
-         apiKey = get<ApiKeyInterceptor>(),
-         networkConnectivity = get<ConnectivityInterceptor>(),
+         connectivityInterceptor = get<ConnectivityInterceptor>(),
+         apiKeyInterceptor = get<ApiKeyInterceptor>(),
+         bearerTokenInterceptor = get<BearerTokenInterceptor>(),
          loggingInterceptor = get<HttpLoggingInterceptor>(),
       )
    }
    logInfo(tag, "single    -> Retrofit")
    single<Retrofit> {
       createRetrofit(
+         baseUrl = Globals.BASE_URL,
          okHttpClient = get<OkHttpClient>()
       )
    }

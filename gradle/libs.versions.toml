@@ -23,6 +23,8 @@ windowsizeclass = "1.4.0"
 retrofit = "3.0.0"
 retrofit2-kotlinx-json = "1.0.0"
 retrofitLogging = "5.3.2"
+mockwebserver = "5.3.2"
+
 room = "2.8.4"
 
 # testing
@@ -97,6 +99,7 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose"
 retrofit2-core = { module ="com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-converter-json = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofit2-kotlinx-json" }
 retrofit2-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "retrofitLogging" }
+okhttp3-mockserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver"}
 
 # Google Play Services Location API
 gplay-location = { module = "com.google.android.gms:play-services-location", version.ref = "googlePlayLocation" }

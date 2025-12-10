@@ -132,10 +132,8 @@ dependencies {
    implementation(libs.koin.androidx.compose)
 
    // Retrofit
-   //implementation(libs.gson.json)
    implementation(libs.retrofit2.core)
    implementation(libs.retrofit2.converter.json)
-   // implementation(libs.retrofit2.gson)
    implementation(libs.retrofit2.logging)
 
    // Paging
@@ -163,6 +161,11 @@ dependencies {
 
    // Roboelectric
    testImplementation(libs.robolectric.test)
+
+   // retrofit mock webserver
+   testImplementation(libs.kotlinx.serialization.json)
+   testImplementation(libs.okhttp3.mockserver)
+   testImplementation(libs.retrofit2.converter.json)
 
    // ANDROID TESTS ---------------
    // https://developer.android.com/jetpack/androidx/releases/test
