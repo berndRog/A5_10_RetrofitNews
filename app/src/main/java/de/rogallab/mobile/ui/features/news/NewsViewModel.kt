@@ -106,7 +106,7 @@ class NewsViewModel(
       // create a new flow for each reload event
       reloadTrigger
          // Cancel prior request whenever a new reload event occurs
-         .flatMapLatest {
+         .flatMapLatest { // nothing to map in trigger
             logDebug(TAG, "call Webservice getEverything() ")
             _repository.getEverything(
                searchText = _newsUiStateFlow.value.searchText,
@@ -117,11 +117,10 @@ class NewsViewModel(
             logDebug(TAG, "show loading = true")
             updateState(_newsUiStateFlow) { copy(loading = true) }
          }
-         .map { result: Result<NewsDto> ->
-            // Transform Result<News> into NewsUiState
+         .map { result: Result<List<Article>> ->
+            // Transform Result<List<Article>> into NewsUiState
             result.fold(
-               onSuccess = { newsDto ->
-                  val articles = newsDto.articles.map { it.toArticle() }
+               onSuccess = { articles: List<Article> ->
                   logDebug(TAG, "loading = false, articles = ${articles.size}")
                   updateState(_newsUiStateFlow) {
                      copy(loading = false, articles = articles) }

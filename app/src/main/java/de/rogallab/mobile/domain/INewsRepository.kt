@@ -10,7 +10,7 @@ interface INewsRepository {
       searchText: String,
       pageSize: Int = 20,
       sortBy: String = "publishedAt"
-   ): Flow<Result<NewsDto>>
+   ): Flow<Result<List<Article>>>
 
    fun getEverythingPaged(
       searchText: String,

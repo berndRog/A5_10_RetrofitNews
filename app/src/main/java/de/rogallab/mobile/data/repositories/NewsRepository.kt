@@ -7,6 +7,7 @@ import androidx.paging.map
 import de.rogallab.mobile.data.INewsApi
 import de.rogallab.mobile.data.remote.dtos.NewsDto
 import de.rogallab.mobile.data.mappings.toArticle
+import de.rogallab.mobile.data.remote.dtos.ArticleDto
 import de.rogallab.mobile.domain.INewsRepository
 import de.rogallab.mobile.domain.entites.Article
 import de.rogallab.mobile.domain.utilities.logError
@@ -28,14 +29,14 @@ class NewsRepository(
       searchText: String,
       pageSize: Int,
       sortBy: String
-   ): Flow<Result<NewsDto>> = flow {
+   ): Flow<Result<List<Article>>> = flow {
 
       // Trim the text to avoid triggering the API for whitespace-only input
       val query = searchText.trim()
 
       // SHORT-CIRCUIT: if the search text is empty, immediately emit an empty News() object.
       if (query.isBlank()) {
-         emit(Result.success(NewsDto()))
+         emit(Result.success(listOf()))
          return@flow  // stop execution of the flow builder
       }
 
@@ -55,10 +56,10 @@ class NewsRepository(
             val newsDto: NewsDto? = response.body()
             // Check parameters
             if (newsDto != null) {
-               if(newsDto?.status != "ok")
-                  logError(TAG,"news status: ${newsDto?.status}")
-              // Emit the successful result with the received news data
-               emit(Result.success(newsDto))
+               val articleDtos: List<ArticleDto> = newsDto.articles
+               val articles: List<Article> = articleDtos.map{ it.toArticle() }
+               // Emit the successful result with the received news data
+               emit(Result.success(articles))
             }
             else {
                // emit(Result.failure(Exception("Empty response body")))
