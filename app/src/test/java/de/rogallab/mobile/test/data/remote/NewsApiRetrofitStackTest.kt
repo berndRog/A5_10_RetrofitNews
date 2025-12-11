@@ -1,6 +1,6 @@
-package de.rogallab.mobile.data.remote
+package de.rogallab.mobile.test.data.remote
 
-import de.rogallab.mobile.TestApplicationWithoutKoin
+import de.rogallab.mobile.test.TestApplicationWithoutKoin
 import de.rogallab.mobile.data.INewsApi
 import de.rogallab.mobile.data.remote.dtos.NewsDto
 import de.rogallab.mobile.data.remote.network.ApiKeyInterceptor
@@ -16,6 +16,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Before
@@ -24,6 +25,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import retrofit2.Retrofit
+import java.io.IOException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -121,6 +123,45 @@ class NewsApiRetrofitStackTest {
                      "url": "https://example.com/article",
                      "urlToImage": "https://example.com/image.jpg",
                      "publishedAt": "2025-12-10T12:34:56Z"
+                   }
+                 ]
+               }
+               """.trimIndent()
+            )
+      )
+   }
+   // Simple reusable MockWebServer JSON response
+   private fun enqueueNews3Response() {
+      _mockWebServer.enqueue(
+         MockResponse()
+            .setResponseCode(200)
+            .setHeader("Content-Type", "application/json")
+            .setBody(
+               """
+               {
+                 "status": "ok",
+                 "totalResults": 3,
+                 "articles": [
+                   {
+                     "title": "Test title 1",
+                     "description": "Test description 1",
+                     "url": "https://example.com/article1",
+                     "urlToImage": "https://example.com/image1.jpg",
+                     "publishedAt": "2025-12-10T08:00:00Z"
+                   },
+                   {
+                     "title": "Test title 2",
+                     "description": "Test description 3",
+                     "url": "https://example.com/article2",
+                     "urlToImage": "https://example.com/image3.jpg",
+                     "publishedAt": "2025-12-10T09:00:00Z"
+                   },
+                   {
+                     "title": "Test title 3",
+                     "description": "Test description 3",
+                     "url": "https://example.com/article3",
+                     "urlToImage": "https://example.com/image3.jpg",
+                     "publishedAt": "2025-12-10T10:00:00Z"
                    }
                  ]
                }
@@ -328,11 +369,11 @@ class NewsApiRetrofitStackTest {
       // Simulate a broken connection: disconnect immediately
       _mockWebServer.enqueue(
          MockResponse()
-            .setSocketPolicy(okhttp3.mockwebserver.SocketPolicy.DISCONNECT_AT_START)
+            .setSocketPolicy(SocketPolicy.DISCONNECT_AT_START)
       )
 
       // Act + Assert: Retrofit should surface this as an IOException
-      assertFailsWith<java.io.IOException> {
+      assertFailsWith<IOException> {
          runBlocking {
             _api.getEverything("NetworkFail", 1, 10, "publishedAt")
          }

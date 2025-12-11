@@ -41,13 +41,13 @@ fun SearchField(
       localSearchText = searchText
    }
 
-   // Debounce mechanism to delay onNameChange call
-   LaunchedEffect(localSearchText) {
-      delay(300) // Adjust delay as needed
-      if (localSearchText != searchText) {
-         onSearchTextChange(localSearchText)
-      }
-   }
+//   // Debounce mechanism to delay onNameChange call
+//   LaunchedEffect(localSearchText) {
+//      delay(300) // Adjust delay as needed
+//      if (localSearchText != searchText) {
+//         onSearchTextChange(localSearchText)
+//      }
+//   }
 
    OutlinedTextField(
       modifier = Modifier
@@ -55,8 +55,8 @@ fun SearchField(
          .fillMaxWidth(),
       value = localSearchText,
       onValueChange = {
-         localSearchText = it
-         // onSearchTextChange(it) see debouncing
+         //localSearchText = it
+         onSearchTextChange(it)
       },
       label = {
          Text(text = stringResource(R.string.searchtext))

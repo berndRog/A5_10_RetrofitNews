@@ -167,6 +167,12 @@ dependencies {
    testImplementation(libs.okhttp3.mockserver)
    testImplementation(libs.retrofit2.converter.json)
 
+   // Mockk
+   testImplementation(libs.mockk){
+      exclude(group = "org.junit.jupiter")
+      exclude(group = "org.junit.platform")
+   }
+
    // ANDROID TESTS ---------------
    // https://developer.android.com/jetpack/androidx/releases/test
    // Coroutines Testing
@@ -204,7 +210,7 @@ dependencies {
    // Espresso To use the androidx.test.espresso
    androidTestImplementation(libs.androidx.test.espresso.core)
 
-   // Mockito
+   // Mockk
    androidTestImplementation(libs.mockk.android)
 
    debugImplementation(libs.androidx.ui.tooling)

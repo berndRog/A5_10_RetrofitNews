@@ -76,7 +76,7 @@ class NewsRepository(
       catch (t: Throwable) { emit(Result.failure(t)) }
 
       // Ensure the entire pipeline runs on the provided dispatcher (usually Dispatchers.IO)
-   }.flowOn(_dispatcher)
+   } .flowOn(_dispatcher)
 
    //--- With paging: infinite scroll using Paging 3 -----------------------------------------------
    override fun getEverythingPaged(

@@ -1,4 +1,4 @@
-package de.rogallab.mobile
+package de.rogallab.mobile.test
 
 import de.rogallab.mobile.Globals.isComp
 import de.rogallab.mobile.Globals.isDebug

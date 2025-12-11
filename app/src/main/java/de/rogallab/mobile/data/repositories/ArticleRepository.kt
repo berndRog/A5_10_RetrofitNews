@@ -30,35 +30,29 @@ class ArticleRepository(
             if (t is CancellationException) { throw t }
             emit(Result.failure(t))  // <-- `emit` IS required here
          }
-         // Run DB + mapping on the given dispatcher (usually Dispatchers.IO)
-         .flowOn(_dispatcher)
-
 
    // Upsert (insert or update) a single article.
    override suspend fun upsert(article: Article): Result<Unit> =
-      withContext(_dispatcher) {
-         return@withContext try {
-            logDebug(TAG, "upsert article")
-            _articleDao.upsert(article.toArticleRoomDto())
-            Result.success(Unit)
-         } catch (t: Throwable) {
-            if (t is CancellationException) { throw t }
-            Result.failure(t)
-         }
+      try {
+         logDebug(TAG, "upsert article")
+         _articleDao.upsert(article.toArticleRoomDto())
+         Result.success(Unit)
+      } catch (t: Throwable) {
+         if (t is CancellationException) { throw t }
+         Result.failure(t)
       }
 
    // Remove a single article.
    override suspend fun remove(article: Article): Result<Unit> =
-      withContext(_dispatcher) {
-         return@withContext try {
-            logDebug(TAG, "delete article")
-            _articleDao.remove(article.toArticleRoomDto())
-            Result.success(Unit)
-         } catch (t: Throwable) {
-            if (t is CancellationException) { throw t }
-            Result.failure(t)
-         }
+      try {
+         logDebug(TAG, "delete article")
+         _articleDao.remove(article.toArticleRoomDto())
+         Result.success(Unit)
+      } catch (t: Throwable) {
+         if (t is CancellationException) { throw t }
+         Result.failure(t)
       }
+
 
    companion object {
       private const val TAG = "<-ArticleRepository"

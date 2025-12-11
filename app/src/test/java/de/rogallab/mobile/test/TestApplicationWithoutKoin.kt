@@ -1,4 +1,4 @@
-package de.rogallab.mobile
+package de.rogallab.mobile.test
 
 import android.app.Application
 
