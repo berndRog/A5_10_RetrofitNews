@@ -3,8 +3,7 @@ package de.rogallab.mobile
 import androidx.compose.material3.SnackbarDuration
 
 object Globals {
-
-   const val APP_NAME = "A5_10_RetrofitNews"
+   const val PAGING = true
 
    const val BASE_URL: String = "https://newsapi.org/"
    const val API_KEY:  String = BuildConfig.NEWS_API_KEY

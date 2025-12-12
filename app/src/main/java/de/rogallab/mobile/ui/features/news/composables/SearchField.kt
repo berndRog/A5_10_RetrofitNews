@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import de.rogallab.mobile.R
-import kotlinx.coroutines.delay
 
 @Composable
 fun SearchField(
@@ -34,35 +33,28 @@ fun SearchField(
    onTriggerSearch: () -> Unit
 ) {
    var localSearchText by rememberSaveable { mutableStateOf(searchText) }
-   var keyboardController = LocalSoftwareKeyboardController.current
+   val keyboardController = LocalSoftwareKeyboardController.current
 
-   // Update localSearchText when name changes
+   // Keep local state in sync with external state
    LaunchedEffect(searchText) {
       localSearchText = searchText
    }
-
-//   // Debounce mechanism to delay onNameChange call
-//   LaunchedEffect(localSearchText) {
-//      delay(300) // Adjust delay as needed
-//      if (localSearchText != searchText) {
-//         onSearchTextChange(localSearchText)
-//      }
-//   }
 
    OutlinedTextField(
       modifier = Modifier
          .padding(bottom = 8.dp)
          .fillMaxWidth(),
       value = localSearchText,
-      onValueChange = {
-         //localSearchText = it
-         onSearchTextChange(it)
+      onValueChange = { text ->
+         localSearchText = text
+         onSearchTextChange(text)
       },
       label = {
          Text(text = stringResource(R.string.searchtext))
       },
       leadingIcon = {
-         Icon(imageVector = Icons.Outlined.Search,
+         Icon(
+            imageVector = Icons.Outlined.Search,
             contentDescription = "Search News",
             modifier = Modifier.clickable {
                onTriggerSearch()
@@ -70,13 +62,15 @@ fun SearchField(
          )
       },
       trailingIcon = {
-         Icon(imageVector = Icons.Outlined.Clear,
-            contentDescription = "Delete  search text",
+         Icon(
+            imageVector = Icons.Outlined.Clear,
+            contentDescription = "Clear search text",
             modifier = Modifier.clickable {
                localSearchText = ""
                onSearchTextChange("")
                onTriggerSearch()
-            })
+            }
+         )
       },
       keyboardOptions = KeyboardOptions(
          keyboardType = KeyboardType.Text,

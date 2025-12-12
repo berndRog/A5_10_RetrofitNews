@@ -27,12 +27,14 @@ import de.rogallab.mobile.domain.utilities.logVerbose
 import de.rogallab.mobile.ui.features.article.ArticlesViewModel
 import de.rogallab.mobile.ui.features.article.composables.ArticleWebScreen
 import de.rogallab.mobile.ui.features.article.composables.ArticlesListScreen
+import de.rogallab.mobile.ui.features.news.NewsPagingViewModel
 import de.rogallab.mobile.ui.features.news.NewsViewModel
 import de.rogallab.mobile.ui.features.news.composables.NewsListScreen
+import de.rogallab.mobile.ui.features.news.composables.NewsPagingListScreen
+import de.rogallab.mobile.ui.navigation.ArticleWeb
 import de.rogallab.mobile.ui.navigation.ArticlesList
 import de.rogallab.mobile.ui.navigation.Nav3ViewModelTopLevel
 import de.rogallab.mobile.ui.navigation.NewsList
-import de.rogallab.mobile.ui.navigation.ArticleWeb
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 import org.koin.core.parameter.parametersOf
@@ -40,9 +42,10 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppNavigation(
-   navViewModel: Nav3ViewModelTopLevel       = koinActivityViewModel { parametersOf(NewsList) },
-   newsViewModel: NewsViewModel              = koinActivityViewModel<NewsViewModel>{ parametersOf(navViewModel) },
-   articlesViewModel: ArticlesViewModel      = koinActivityViewModel<ArticlesViewModel>{ parametersOf(navViewModel) },
+   navViewModel: Nav3ViewModelTopLevel      = koinActivityViewModel { parametersOf(NewsList) },
+   newsViewModel: NewsViewModel             = koinActivityViewModel<NewsViewModel>{ parametersOf(navViewModel) },
+   newsPagingViewModel: NewsPagingViewModel = koinActivityViewModel<NewsPagingViewModel>{ parametersOf(navViewModel) },
+   articlesViewModel: ArticlesViewModel     = koinActivityViewModel<ArticlesViewModel>{ parametersOf(navViewModel) },
    imageLoader: ImageLoader = koinInject<ImageLoader>(),
    animationDuration: Int = Globals.animationDuration
 ) {
@@ -107,12 +110,20 @@ fun AppNavigation(
 
       entryProvider = entryProvider {
          entry<NewsList> { _ ->
-            NewsListScreen(
-               navViewModel = navViewModel,
-               newsViewModel = newsViewModel,
-               articlesViewModel = articlesViewModel,
-               imageLoader = imageLoader,
-            )
+            if(! Globals.PAGING) {
+               NewsListScreen(
+                  navViewModel = navViewModel,
+                  newsViewModel = newsViewModel,
+                  articlesViewModel = articlesViewModel,
+                  imageLoader = imageLoader,
+               )
+            } else {
+               NewsPagingListScreen(
+                  navViewModel = navViewModel,
+                  newsPagingViewModel = newsPagingViewModel,
+                  articlesViewModel = articlesViewModel,
+               )
+            }
          }
          entry<ArticlesList> { _ ->
             ArticlesListScreen(

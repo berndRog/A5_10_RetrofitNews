@@ -26,7 +26,7 @@ fun <T> CollectBy (uiStateFlow: StateFlow<T>, tag:String ): T {
       minActiveState = Lifecycle.State.STARTED
    )
    SideEffect {
-      logDebug(tag, "lifecycleOwner:$lifecycleOwner, lifecycle.State:${lifecycle.currentState}")
+      //logDebug(tag, "lifecycleOwner:$lifecycleOwner, lifecycle.State:${lifecycle.currentState}")
       logDebug(tag, "uiState:$uiState")
    }
    return uiState

@@ -25,6 +25,7 @@ import de.rogallab.mobile.domain.INewsRepository
 import de.rogallab.mobile.domain.utilities.logInfo
 import de.rogallab.mobile.test.data.SeedTestdata
 import de.rogallab.mobile.ui.features.article.ArticlesViewModel
+import de.rogallab.mobile.ui.features.news.NewsBaseViewModel
 import de.rogallab.mobile.ui.features.news.NewsViewModel
 import de.rogallab.mobile.ui.navigation.INavHandler
 import de.rogallab.mobile.ui.navigation.Nav3ViewModelTopLevel
@@ -181,10 +182,9 @@ fun defModulesTest(
    logInfo(tag, "test factory -> NewsViewModel")
    factory { (navHandler: INavHandler) ->
       NewsViewModel(
-         _repository = get<INewsRepository>(),
-         _imageLoader = get<ImageLoader>(),
-         _navHandler = navHandler,
-         _usePaging = false
+         repository = get<INewsRepository>(),
+         imageLoader = get<ImageLoader>(),
+         navHandler = navHandler,
       )
    }
    logInfo(tag, "test factory -> ArticlesViewModel")

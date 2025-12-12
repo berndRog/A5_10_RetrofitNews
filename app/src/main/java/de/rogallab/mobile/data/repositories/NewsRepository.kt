@@ -24,7 +24,7 @@ class NewsRepository(
    private val _dispatcher: CoroutineDispatcher
 ) : INewsRepository {
 
-   //--- Without paging: one-shot "everything" call wrapped as Flow<Result<NewsDto>> ---------------
+   //--- Without paging: one-shot "everything" call wrapped as Flow<Result<List<Article>> ----------
    override fun getEverything(
       searchText: String,
       pageSize: Int,

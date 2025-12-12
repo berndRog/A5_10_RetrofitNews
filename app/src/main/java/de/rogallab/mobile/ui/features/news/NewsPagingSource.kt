@@ -13,7 +13,7 @@ class NewsPagingSource(
    private val api: INewsApi,
    private val query: String,
    private val pageSize: Int,
-   private val sortBy: String = "publishedAt"   // <-- Sorting stays exactly as you had it
+   private val sortBy: String = "publishedAt"
 ) : PagingSource<Int, ArticleDto>() {
 
    companion object { private const val TAG = "<-NewsPagingSource" }
@@ -29,9 +29,9 @@ class NewsPagingSource(
       val page = params.key ?: 1
 
       return try {
-         logDebug(TAG, "load(page=$page, query='$query', sortBy=$sortBy)")
+         logDebug(TAG, "load (page=$page, query='$query', sortBy=$sortBy)")
 
-         // Call REST API with page, pageSize and sortBy (same as old code)
+         // Call REST API with page, pageSize and sortBy
          val response = api.getEverything(
             text = query,
             page = page,
@@ -40,22 +40,25 @@ class NewsPagingSource(
          )
 
          // Handle HTTP errors
-         if (!response.isSuccessful) return LoadResult.Error(HttpException(response))
+         if (!response.isSuccessful)
+            return LoadResult.Error(HttpException(response))
 
-         // Empty response safe fallback
-         val body: NewsDto = response.body() ?: return LoadResult.Page(
-            data = emptyList(),
-            prevKey = if (page == 1) null else page - 1,
-            nextKey = null
-         )
+         // Get the payload
+         val body: NewsDto = response.body()
+            // if null return empty list
+            ?: return LoadResult.Page(
+               data = emptyList(),
+               prevKey = if (page == 1) null else page - 1,
+               nextKey = null
+            )
 
-         val articles: List<ArticleDto> = body.articles     // DTO stays the same
+         val articleDtos: List<ArticleDto> = body.articles
 
          // Pagination logic: stop if no more data
          LoadResult.Page(
-            data = articles,
+            data = articleDtos,
             prevKey = if (page == 1) null else page - 1,
-            nextKey = if (articles.isEmpty()) null else page + 1
+            nextKey = if (articleDtos.isEmpty()) null else page + 1
          )
       }
       catch (e: IOException) { LoadResult.Error(e) }      // Network failure

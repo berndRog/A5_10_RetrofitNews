@@ -24,6 +24,8 @@ import de.rogallab.mobile.domain.IArticleRepository
 import de.rogallab.mobile.domain.INewsRepository
 import de.rogallab.mobile.domain.utilities.logInfo
 import de.rogallab.mobile.ui.features.article.ArticlesViewModel
+import de.rogallab.mobile.ui.features.news.NewsBaseViewModel
+import de.rogallab.mobile.ui.features.news.NewsPagingViewModel
 import de.rogallab.mobile.ui.features.news.NewsViewModel
 import de.rogallab.mobile.ui.navigation.INavHandler
 import de.rogallab.mobile.ui.navigation.Nav3ViewModelTopLevel
@@ -135,7 +137,6 @@ val defModules: Module = module {
       )
    }
 
-
    //== ui modules =================================================================================
    logInfo(tag, "single    -> createImageLoader")
    single<ImageLoader> { createImageLoader(androidContext()) }
@@ -148,12 +149,20 @@ val defModules: Module = module {
    logInfo(tag, "viewModel -> NewsViewModel")
    viewModel<NewsViewModel> { (navHandler: INavHandler) ->
       NewsViewModel(
-         _repository = get<INewsRepository>(),
-         _imageLoader = get<ImageLoader>(),
-         _navHandler = navHandler,
-         _usePaging = false
+         repository = get<INewsRepository>(),
+         imageLoader = get<ImageLoader>(),
+         navHandler = navHandler
       )
    }
+   logInfo(tag, "viewModel -> NewsPagingViewModel")
+   viewModel<NewsPagingViewModel> { (navHandler: INavHandler) ->
+      NewsPagingViewModel(
+         repository = get<INewsRepository>(),
+         imageLoader = get<ImageLoader>(),
+         navHandler = navHandler
+      )
+   }
+
    logInfo(tag, "viewModel -> ArticlesViewModel")
    viewModel<ArticlesViewModel> { (navHandler: INavHandler) ->
       ArticlesViewModel(
