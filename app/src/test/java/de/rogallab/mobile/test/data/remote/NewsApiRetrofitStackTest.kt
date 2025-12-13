@@ -1,6 +1,5 @@
 package de.rogallab.mobile.test.data.remote
 
-import de.rogallab.mobile.test.TestApplicationWithoutKoin
 import de.rogallab.mobile.data.INewsApi
 import de.rogallab.mobile.data.remote.dtos.NewsDto
 import de.rogallab.mobile.data.remote.network.ApiKeyInterceptor
@@ -10,6 +9,7 @@ import de.rogallab.mobile.data.remote.network.ConnectivityInterceptor
 import de.rogallab.mobile.data.remote.network.INetworkConnection
 import de.rogallab.mobile.data.remote.network.createOkHttpClient
 import de.rogallab.mobile.data.remote.network.createRetrofit
+import de.rogallab.mobile.test.TestApplicationWithoutKoin
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,6 +48,16 @@ class NewsApiRetrofitStackTest {
    private val _testApiKey = "TEST_API_KEY"
    private val _testBearerToken = "TEST_BEARER_TOKEN"
 
+   // IMPORTANT: must match your INewsApi @Query names
+   private val QUERY_TEXT_1 = "q"          // your interface uses @Query("q")
+   private val QUERY_TEXT_2 = "text"       // fallback if you ever switch
+   private val QUERY_PAGE = "page"
+   private val QUERY_PAGE_SIZE = "pageSize"  // <<< use camelCase now (not pagesize)
+   private val QUERY_SORT_BY = "sortBy"
+
+   private val APIKEY_HEADER = "X-API-Key"
+   private val APIKEY_QUERY = "apiKey"
+
    @Before
    fun setup() {
       _mockWebServer = MockWebServer()
@@ -67,9 +77,10 @@ class NewsApiRetrofitStackTest {
       apiKeyProvider: () -> String? = { _testApiKey },
       bearerTokenProvider: () -> String? = { _testBearerToken }
    ): OkHttpClient {
-      class NetworkConnectionMock: INetworkConnection {
+      class NetworkConnectionMock : INetworkConnection {
          override fun isOnline(): Boolean = true
       }
+
       val connectivityInterceptor = ConnectivityInterceptor(
          NetworkConnectionMock()
       )
@@ -77,7 +88,8 @@ class NewsApiRetrofitStackTest {
       val apiKeyInterceptor = ApiKeyInterceptor(
          _keyProvider = apiKeyProvider,
          _mode = mode,
-         _queryName = "apiKey"
+         _headerName = APIKEY_HEADER,
+         _queryName = APIKEY_QUERY
       )
 
       val bearerInterceptor = BearerTokenInterceptor(
@@ -96,94 +108,87 @@ class NewsApiRetrofitStackTest {
       )
    }
 
-   private fun buildRetrofit(
-      okHttpClient: OkHttpClient
-   ): Retrofit {
-      return createRetrofit(
+   private fun buildRetrofit(okHttpClient: OkHttpClient): Retrofit =
+      createRetrofit(
          baseUrl = _mockWebServer.url("/").toString(),
          okHttpClient = okHttpClient
       )
+
+   private fun enqueueJson(code: Int = 200, body: String) {
+      _mockWebServer.enqueue(
+         MockResponse()
+            .setResponseCode(code)
+            .setHeader("Content-Type", "application/json")
+            .setBody(body)
+      )
    }
 
-   // Simple reusable MockWebServer JSON response
-   private fun enqueueNewsResponse() {
-      _mockWebServer.enqueue(
-         MockResponse()
-            .setResponseCode(200)
-            .setHeader("Content-Type", "application/json")
-            .setBody(
-               """
-               {
-                 "status": "ok",
-                 "totalResults": 1,
-                 "articles": [
-                   {
-                     "title": "Test title",
-                     "description": "Test description",
-                     "url": "https://example.com/article",
-                     "urlToImage": "https://example.com/image.jpg",
-                     "publishedAt": "2025-12-10T12:34:56Z"
-                   }
-                 ]
-               }
-               """.trimIndent()
-            )
+   private fun enqueueNewsResponse(totalResults: Int = 1): Unit =
+      enqueueJson(
+         code = 200,
+         body = """
+            {
+              "status": "ok",
+              "totalResults": $totalResults,
+              "articles": [
+                {
+                  "title": "Test title",
+                  "description": "Test description",
+                  "url": "https://example.com/article",
+                  "urlToImage": "https://example.com/image.jpg",
+                  "publishedAt": "2025-12-10T12:34:56Z"
+                }
+              ]
+            }
+         """.trimIndent()
+      )
+
+   private fun enqueue401InvalidKey() {
+      enqueueJson(
+         code = 401,
+         body = """
+            {
+              "status": "error",
+              "code": "apiKeyInvalid",
+              "message": "Your API key is invalid."
+            }
+         """.trimIndent()
       )
    }
-   // Simple reusable MockWebServer JSON response
-   private fun enqueueNews3Response() {
-      _mockWebServer.enqueue(
-         MockResponse()
-            .setResponseCode(200)
-            .setHeader("Content-Type", "application/json")
-            .setBody(
-               """
-               {
-                 "status": "ok",
-                 "totalResults": 3,
-                 "articles": [
-                   {
-                     "title": "Test title 1",
-                     "description": "Test description 1",
-                     "url": "https://example.com/article1",
-                     "urlToImage": "https://example.com/image1.jpg",
-                     "publishedAt": "2025-12-10T08:00:00Z"
-                   },
-                   {
-                     "title": "Test title 2",
-                     "description": "Test description 3",
-                     "url": "https://example.com/article2",
-                     "urlToImage": "https://example.com/image3.jpg",
-                     "publishedAt": "2025-12-10T09:00:00Z"
-                   },
-                   {
-                     "title": "Test title 3",
-                     "description": "Test description 3",
-                     "url": "https://example.com/article3",
-                     "urlToImage": "https://example.com/image3.jpg",
-                     "publishedAt": "2025-12-10T10:00:00Z"
-                   }
-                 ]
-               }
-               """.trimIndent()
-            )
+
+   private fun enqueue500ServerError() {
+      enqueueJson(
+         code = 500,
+         body = """
+            {
+              "status": "error",
+              "code": "serverError",
+              "message": "Internal server error."
+            }
+         """.trimIndent()
       )
    }
+
+   // Helper for extracting the "text" query parameter regardless of naming ("q" vs "text")
+   private fun textQuery(url: okhttp3.HttpUrl): String? =
+      url.queryParameter(QUERY_TEXT_1) ?: url.queryParameter(QUERY_TEXT_2)
 
    // ---------------------------------------------------------------------
    // 1) Retrofit with HEADER API-Key injection
    // ---------------------------------------------------------------------
    @Test
    fun `Header mode - API key added as header, parsing successful`() = runBlocking {
+      // Arrange
       _client = buildClient(mode = ApiKeyMode.HEADER)
       _retrofit = buildRetrofit(_client)
       _api = _retrofit.create(INewsApi::class.java)
 
       enqueueNewsResponse()
 
+      // Act
       val response = _api.getEverything("Hannover", 1, 10, "publishedAt")
 
-      // --- Validate JSON → DTO parsing ---
+      // Assert - parsing
       assertTrue(response.isSuccessful)
       val body = response.body()
       assertNotNull(body)
@@ -191,36 +196,40 @@ class NewsApiRetrofitStackTest {
       assertEquals(1, body.totalResults)
       assertEquals("Test title", body.articles.first().title)
 
-      // --- Validate outgoing request ---
+      // Assert - request
       val request: RecordedRequest = _mockWebServer.takeRequest()
-      val url = request.requestUrl!!
-      assertEquals("/v2/everything", url.encodedPath)
+      val url = request.requestUrl!! // OkHttp4
 
-      // query parameters from interface
-      assertEquals("Hannover", url.queryParameter("q"))
-      assertEquals("1", url.queryParameter("page"))
-      assertEquals("10", url.queryParameter("pagesize"))
-      assertEquals("publishedAt", url.queryParameter("sortBy"))
+      assertEquals("/v2/everything", url.encodedPath)
+      assertEquals("Hannover", textQuery(url))
+      assertEquals("1", url.queryParameter(QUERY_PAGE))
+      assertEquals("10", url.queryParameter(QUERY_PAGE_SIZE))
+      assertEquals("publishedAt", url.queryParameter(QUERY_SORT_BY))
 
       // API-key must be in header, NOT query
-      assertEquals(_testApiKey, request.getHeader("X-API-Key"))
-      assertNull(url.queryParameter("apiKey"))
+      assertEquals(_testApiKey, request.getHeader(APIKEY_HEADER))
+      assertNull(url.queryParameter(APIKEY_QUERY))
 
       // Bearer token must be present
       assertEquals("Bearer $_testBearerToken", request.getHeader("Authorization"))
    }
 
+   // ---------------------------------------------------------------------
    // 2) Retrofit with QUERY API-Key injection
+   // ---------------------------------------------------------------------
    @Test
    fun `Query mode - API key added as query parameter, header absent`() = runBlocking {
+      // Arrange
       _client = buildClient(mode = ApiKeyMode.QUERY)
       _retrofit = buildRetrofit(_client)
       _api = _retrofit.create(INewsApi::class.java)
 
       enqueueNewsResponse()
 
+      // Act
       val response = _api.getEverything("Berlin", 2, 5, "publishedAt")
 
+      // Assert
       assertTrue(response.isSuccessful)
       val body = response.body()
       assertNotNull(body)
@@ -230,37 +239,58 @@ class NewsApiRetrofitStackTest {
       val url = request.requestUrl!!
 
       // API key in query
-      assertEquals(_testApiKey, url.queryParameter("apiKey"))
+      assertEquals(_testApiKey, url.queryParameter(APIKEY_QUERY))
       // header must NOT be set
-      assertNull(request.getHeader("X-API-Key"))
+      assertNull(request.getHeader(APIKEY_HEADER))
 
+      // base query params still present
+      assertEquals("Berlin", textQuery(url))
+      assertEquals("2", url.queryParameter(QUERY_PAGE))
+      assertEquals("5", url.queryParameter(QUERY_PAGE_SIZE))
+      assertEquals("publishedAt", url.queryParameter(QUERY_SORT_BY))
+
+      // bearer still injected
       assertEquals("Bearer $_testBearerToken", request.getHeader("Authorization"))
    }
 
+   // ---------------------------------------------------------------------
    // 3) No API-Key provided → must not inject
+   // ---------------------------------------------------------------------
    @Test
    fun `No API key - neither header nor query injected, bearer remains`() = runBlocking {
+      // Arrange
       _client = buildClient(mode = ApiKeyMode.HEADER, apiKeyProvider = { null })
       _retrofit = buildRetrofit(_client)
       _api = _retrofit.create(INewsApi::class.java)
 
       enqueueNewsResponse()
 
+      // Act
       val response = _api.getEverything("Hamburg", 1, 20, "publishedAt")
+
+      // Assert
       assertTrue(response.isSuccessful)
 
       val request = _mockWebServer.takeRequest()
       val url = request.requestUrl!!
 
       // No API key anywhere
-      assertNull(request.getHeader("X-API-Key"))
-      assertNull(url.queryParameter("apiKey"))
+      assertNull(request.getHeader(APIKEY_HEADER))
+      assertNull(url.queryParameter(APIKEY_QUERY))
+
+      // base query params still present
+      assertEquals("Hamburg", textQuery(url))
+      assertEquals("1", url.queryParameter(QUERY_PAGE))
+      assertEquals("20", url.queryParameter(QUERY_PAGE_SIZE))
+      assertEquals("publishedAt", url.queryParameter(QUERY_SORT_BY))
 
       // Bearer token still injected
       assertEquals("Bearer $_testBearerToken", request.getHeader("Authorization"))
    }
 
+   // ---------------------------------------------------------------------
    // 4) Invalid API key → 401 Unauthorized
+   // ---------------------------------------------------------------------
    @Test
    fun `Header mode - invalid API key results in 401 error`() = runBlocking {
       // Arrange: client with INVALID api key
@@ -271,21 +301,7 @@ class NewsApiRetrofitStackTest {
       _retrofit = buildRetrofit(_client)
       _api = _retrofit.create(INewsApi::class.java)
 
-      // Simulate a 401 response from the server
-      _mockWebServer.enqueue(
-         MockResponse()
-            .setResponseCode(401)
-            .setHeader("Content-Type", "application/json")
-            .setBody(
-               """
-            {
-              "status": "error",
-              "code": "apiKeyInvalid",
-              "message": "Your API key is invalid."
-            }
-            """.trimIndent()
-            )
-      )
+      enqueue401InvalidKey()
 
       // Act
       val response = _api.getEverything("Hannover", 1, 10, "publishedAt")
@@ -294,27 +310,24 @@ class NewsApiRetrofitStackTest {
       assertFalse(response.isSuccessful)
       assertEquals(401, response.code())
 
-      // Optional: inspect error body text (for debugging or logging)
-      val errorBodyText = response.errorBody()?.string()
-      assertNotNull(errorBodyText)
-      // You could assert partial content if you like:
-      // assertTrue(errorBodyText.contains("apiKeyInvalid"))
-
       // Assert - request still injected the header
       val request = _mockWebServer.takeRequest()
       val url = request.requestUrl!!
+
       assertEquals("/v2/everything", url.encodedPath)
 
       // Invalid key is still injected as header
-      assertEquals("INVALID_KEY", request.getHeader("X-API-Key"))
+      assertEquals("INVALID_KEY", request.getHeader(APIKEY_HEADER))
       // No query param in header mode
-      assertNull(url.queryParameter("apiKey"))
+      assertNull(url.queryParameter(APIKEY_QUERY))
 
       // Bearer token should still be present
       assertEquals("Bearer $_testBearerToken", request.getHeader("Authorization"))
    }
 
+   // ---------------------------------------------------------------------
    // 5) Server returns 500 → internal error
+   // ---------------------------------------------------------------------
    @Test
    fun `Server error 500 - response is unsuccessful and body is null`() = runBlocking {
       // Arrange
@@ -322,20 +335,7 @@ class NewsApiRetrofitStackTest {
       _retrofit = buildRetrofit(_client)
       _api = _retrofit.create(INewsApi::class.java)
 
-      _mockWebServer.enqueue(
-         MockResponse()
-            .setResponseCode(500)
-            .setHeader("Content-Type", "application/json")
-            .setBody(
-               """
-            {
-              "status": "error",
-              "code": "serverError",
-              "message": "Internal server error."
-            }
-            """.trimIndent()
-            )
-      )
+      enqueue500ServerError()
 
       // Act
       val response = _api.getEverything("ErrorCase", 1, 20, "publishedAt")
@@ -344,8 +344,7 @@ class NewsApiRetrofitStackTest {
       assertFalse(response.isSuccessful)
       assertEquals(500, response.code())
 
-      // For 5xx errors, you normally should not rely on body structure,
-      // but we can still assert that the body is not parsed into NewsDto:
+      // For 5xx errors, Retrofit will NOT parse into NewsDto (body() == null)
       val body: NewsDto? = response.body()
       assertNull(body)
 
@@ -354,11 +353,19 @@ class NewsApiRetrofitStackTest {
       assertEquals("/v2/everything", url.encodedPath)
 
       // API key & bearer token still injected correctly
-      assertEquals(_testApiKey, request.getHeader("X-API-Key"))
+      assertEquals(_testApiKey, request.getHeader(APIKEY_HEADER))
       assertEquals("Bearer $_testBearerToken", request.getHeader("Authorization"))
+
+      // base query params still present
+      assertEquals("ErrorCase", textQuery(url))
+      assertEquals("1", url.queryParameter(QUERY_PAGE))
+      assertEquals("20", url.queryParameter(QUERY_PAGE_SIZE))
+      assertEquals("publishedAt", url.queryParameter(QUERY_SORT_BY))
    }
 
+   // ---------------------------------------------------------------------
    // 6) Network failure → IOException from Retrofit call
+   // ---------------------------------------------------------------------
    @Test
    fun `Network failure - Retrofit call throws IOException`() {
       // Arrange
@@ -368,8 +375,7 @@ class NewsApiRetrofitStackTest {
 
       // Simulate a broken connection: disconnect immediately
       _mockWebServer.enqueue(
-         MockResponse()
-            .setSocketPolicy(SocketPolicy.DISCONNECT_AT_START)
+         MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AT_START)
       )
 
       // Act + Assert: Retrofit should surface this as an IOException
@@ -378,9 +384,5 @@ class NewsApiRetrofitStackTest {
             _api.getEverything("NetworkFail", 1, 10, "publishedAt")
          }
       }
-
-      // No request data to assert here, because the connection never fully completes.
    }
-
-
 }

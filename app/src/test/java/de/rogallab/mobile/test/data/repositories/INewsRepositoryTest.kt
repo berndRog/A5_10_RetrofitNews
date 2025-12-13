@@ -70,7 +70,7 @@ class INewsRepositoryTest : BaseDataKoinTest() {
       assertEquals("/v2/everything", recorded.url.encodedPath)
       // 2) Query
       assertEquals(
-         "q=Hannover&page=1&pagesize=20&sortBy=publishedAt",
+         "q=Hannover&page=1&pageSize=20&sortBy=publishedAt",
          recorded.url.encodedQuery
       )
       assertEquals("GET", recorded.method)

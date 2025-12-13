@@ -1,4 +1,4 @@
-package de.rogallab.mobile.ui.features.news
+package de.rogallab.mobile.data.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
@@ -54,7 +54,7 @@ class NewsPagingSource(
          LoadResult.Page(
             data = articleDtos,
             prevKey = if (page == 1) null else page - 1,
-            nextKey = if (articleDtos.isEmpty()) null else page + 1
+            nextKey = if (articleDtos.size < pageSize) null else page + 1
          )
       }
       catch (e: IOException) { LoadResult.Error(e) }      // Network failure

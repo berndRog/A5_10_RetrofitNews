@@ -11,7 +11,7 @@ import de.rogallab.mobile.data.remote.dtos.ArticleDto
 import de.rogallab.mobile.domain.INewsRepository
 import de.rogallab.mobile.domain.entites.Article
 import de.rogallab.mobile.domain.utilities.logError
-import de.rogallab.mobile.ui.features.news.NewsPagingSource
+import de.rogallab.mobile.data.paging.NewsPagingSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

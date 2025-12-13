@@ -77,7 +77,7 @@ class INewsApiTest: BaseDataKoinTest() {
 
       // Query string only
       assertEquals(
-         "q=$searchText&page=$page&pagesize=$pageSize&sortBy=$sortBy",
+         "q=$searchText&page=$page&pageSize=$pageSize&sortBy=$sortBy",
          recorded.url.encodedQuery
       )
 
@@ -114,7 +114,7 @@ class INewsApiTest: BaseDataKoinTest() {
       val recorded = _mockWebServer.takeRequest()
       assertEquals("/v2/everything", recorded.url.encodedPath)
       assertEquals(
-         "q=Berlin&page=1&pagesize=20&sortBy=publishedAt",
+         "q=Berlin&page=1&pageSize=20&sortBy=publishedAt",
          recorded.url.encodedQuery
       )
    }

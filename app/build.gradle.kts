@@ -159,6 +159,9 @@ dependencies {
    testImplementation(libs.kotlinx.coroutines.test)
    testImplementation(libs.turbine.test)
 
+   // Paging
+   testImplementation(libs.androidx.paging.common)
+
    // Roboelectric
    testImplementation(libs.robolectric.test)
 

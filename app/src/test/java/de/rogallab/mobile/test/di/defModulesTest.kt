@@ -12,6 +12,7 @@ import de.rogallab.mobile.data.IArticleDao
 import de.rogallab.mobile.data.INewsApi
 import de.rogallab.mobile.data.local.database.AppDatabase
 import de.rogallab.mobile.data.remote.network.ApiKeyInterceptor
+import de.rogallab.mobile.data.remote.network.ApiKeyMode
 import de.rogallab.mobile.data.remote.network.BearerTokenInterceptor
 import de.rogallab.mobile.data.remote.network.ConnectivityInterceptor
 import de.rogallab.mobile.data.remote.network.INetworkConnection
@@ -118,7 +119,10 @@ fun defModulesTest(
    logInfo(tag, "test single    -> InterceptorApiKey")
    single<ApiKeyInterceptor> {
       ApiKeyInterceptor(
-         _keyProvider = { get<ApiKeyStore>().apiKey }
+         _keyProvider = { get<ApiKeyStore>().apiKey },
+         _mode = ApiKeyMode.QUERY,
+         _headerName = "X-API-Key",
+         _queryName = "apiKey"
       )
    }
    logInfo(tag, "test single    -> InterceptorBearerToken")
@@ -178,6 +182,7 @@ fun defModulesTest(
    factory { (startDestination: NavKey) ->  // Parameter for startDestination
       Nav3ViewModelTopLevel(startDestination = startDestination)
    } bind INavHandler::class
+
 
    logInfo(tag, "test factory -> NewsViewModel")
    factory { (navHandler: INavHandler) ->
