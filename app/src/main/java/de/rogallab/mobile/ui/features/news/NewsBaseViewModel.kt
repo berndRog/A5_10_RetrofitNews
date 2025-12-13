@@ -32,7 +32,7 @@ abstract class NewsBaseViewModel(
       when (intent) {
          is NewsIntent.SearchTextChange -> onSearchChange(intent.searchText)
          is NewsIntent.Reload -> reload()
-         is NewsIntent.HandleError -> handleErrorEvent(intent.throwable)
+         is NewsIntent.ShowError -> handleErrorEvent(intent.throwable)
       }
    }
 

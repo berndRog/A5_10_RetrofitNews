@@ -122,6 +122,7 @@ fun AppNavigation(
                   navViewModel = navViewModel,
                   newsPagingViewModel = newsPagingViewModel,
                   articlesViewModel = articlesViewModel,
+                  imageLoader = imageLoader,
                )
             }
          }

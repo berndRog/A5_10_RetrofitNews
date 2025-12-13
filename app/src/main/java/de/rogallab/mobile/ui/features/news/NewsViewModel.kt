@@ -19,10 +19,9 @@ class NewsViewModel(
 
    // Initialize PIPELINE
    init {
-      // Legacy mode: start old pipeline that updates NewsUiState.news
-      logDebug(TAG, "NewsViewModel initialized, i.e. startPipeline()")
+      // start pipeline that updates NewsUiState.news
+      logDebug(TAG, "startPipeline()")
       startPipeline()
-      //reload()
    }
 
    // -------------------------------------------------------------------------
@@ -48,7 +47,7 @@ class NewsViewModel(
             .flatMapLatest { // nothing to map in trigger
                val query = newsUiStateFlow.value.searchText.trim()
                logDebug(TAG, "getEverything() $query")
-               _repository.getEverything(
+               _repository.getEverything(  // returns Flow<Result<List<Article>>>
                   searchText = query,
                )
                // Emit loading state before each new fetch
@@ -59,16 +58,17 @@ class NewsViewModel(
             }
             .collect { result: Result<List<Article>> ->
                // Transform Result<List<Article>> into NewsUiState
-               result.fold(onSuccess = { articles: List<Article> ->
-                  logDebug(TAG, "loading = false, articles = ${articles.size}")
-                  updateState(_newsUiStateFlow) {
-                     copy(loading = false, articles = articles)
+               result
+                  .onSuccess { articles: List<Article> ->
+                     logDebug(TAG, "loading = false, articles = ${articles.size}")
+                     updateState(_newsUiStateFlow) {
+                        copy(loading = false, articles = articles) }
                   }
-               }, onFailure = { t: Throwable ->
-                  logDebug(TAG, "loading = false, error = ${t.message}")
-                  handleErrorEvent(t)
-                  updateState(_newsUiStateFlow) { copy(loading = false) }
-               })
+                  .onFailure { t: Throwable ->
+                     logDebug(TAG, "loading = false, error = ${t.message}")
+                     handleErrorEvent(t)
+                     updateState(_newsUiStateFlow) { copy(loading = false) }
+                  }
             }
       }
    }

@@ -32,12 +32,8 @@ class NewsPagingSource(
          logDebug(TAG, "load (page=$page, query='$query', sortBy=$sortBy)")
 
          // Call REST API with page, pageSize and sortBy
-         val response = api.getEverything(
-            text = query,
-            page = page,
-            pageSize = pageSize,
-            sortBy = sortBy
-         )
+         val response = api.getEverything(text = query, page = page,
+            pageSize = pageSize, sortBy = sortBy)
 
          // Handle HTTP errors
          if (!response.isSuccessful)

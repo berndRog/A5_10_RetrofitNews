@@ -1,6 +1,5 @@
 package de.rogallab.mobile.ui.features.news.composables
 
-import android.R.attr.onClick
 import android.app.Activity
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ import de.rogallab.mobile.ui.features.article.ArticlesViewModel
 import de.rogallab.mobile.ui.features.article.composables.ArticleItem
 import de.rogallab.mobile.ui.features.news.NewsIntent
 import de.rogallab.mobile.ui.features.news.NewsPagingViewModel
-import de.rogallab.mobile.ui.features.news.NewsViewModel
 import de.rogallab.mobile.ui.navigation.Nav3ViewModelTopLevel
 import de.rogallab.mobile.ui.navigation.composables.BottomNav3Bar
 import org.koin.compose.koinInject
@@ -176,7 +174,7 @@ fun NewsPagingListScreen(
    if (refreshState is LoadState.Error) {
       LaunchedEffect(refreshState.error) {
          newsPagingViewModel.onProcessIntent(
-            NewsIntent.HandleError(refreshState.error)
+            NewsIntent.ShowError(refreshState.error)
          )
       }
    }
@@ -185,7 +183,7 @@ fun NewsPagingListScreen(
    if (appendState is LoadState.Error) {
       LaunchedEffect(appendState.error) {
          newsPagingViewModel.onProcessIntent(
-            NewsIntent.HandleError( appendState.error)
+            NewsIntent.ShowError( appendState.error)
          )
       }
    }
