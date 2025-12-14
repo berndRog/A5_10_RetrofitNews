@@ -72,7 +72,7 @@ androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-f
 # paging
 androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
-androidx-paging-common = { module = "androidx.paging:paging-common" , version.ref = "paging"}
+androidx-paging-test = { module = "androidx.paging:paging-testing" , version.ref = "paging"}
 
 # Android Lifecycle
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }

@@ -160,7 +160,7 @@ dependencies {
    testImplementation(libs.turbine.test)
 
    // Paging
-   testImplementation(libs.androidx.paging.common)
+   testImplementation(libs.androidx.paging.test)
 
    // Roboelectric
    testImplementation(libs.robolectric.test)

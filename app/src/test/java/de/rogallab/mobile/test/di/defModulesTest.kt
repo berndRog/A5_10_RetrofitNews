@@ -120,7 +120,7 @@ fun defModulesTest(
    single<ApiKeyInterceptor> {
       ApiKeyInterceptor(
          _keyProvider = { get<ApiKeyStore>().apiKey },
-         _mode = ApiKeyMode.QUERY,
+         _mode = ApiKeyMode.HEADER,
          _headerName = "X-API-Key",
          _queryName = "apiKey"
       )
