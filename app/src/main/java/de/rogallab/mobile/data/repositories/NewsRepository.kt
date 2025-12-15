@@ -12,12 +12,14 @@ import de.rogallab.mobile.domain.INewsRepository
 import de.rogallab.mobile.domain.entites.Article
 import de.rogallab.mobile.domain.utilities.logError
 import de.rogallab.mobile.data.paging.NewsPagingSource
+import de.rogallab.mobile.domain.utilities.logDebug
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import retrofit2.Response
 
 class NewsRepository(
    private val _newsApi: INewsApi,
@@ -43,7 +45,7 @@ class NewsRepository(
       // Normal API call
       try {
          // Call the remote webservice (suspend function)
-         val response = _newsApi.getEverything(
+         val response: Response<NewsDto> = _newsApi.getEverything(
             text = query,
             page = 1,
             pageSize = pageSize,
@@ -58,6 +60,7 @@ class NewsRepository(
             if (newsDto != null) {
                val articleDtos: List<ArticleDto> = newsDto.articles
                val articles: List<Article> = articleDtos.map{ it.toArticle() }
+               logDebug(TAG,"getEverything: articleDtos: ${articles.size}")
                // Emit the successful result with the received news data
                emit(Result.success(articles))
             }

@@ -21,12 +21,15 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import de.rogallab.mobile.R
+import de.rogallab.mobile.domain.utilities.logComp
 import de.rogallab.mobile.ui.base.composables.CollectBy
 import de.rogallab.mobile.ui.errors.ErrorHandler
 import de.rogallab.mobile.ui.features.article.ArticleIntent
@@ -41,6 +44,8 @@ fun ArticleWebScreen(
 ) {
 
    val tag = "<-ArticleWebScreen"
+   val nComp = remember { mutableIntStateOf(1) }
+   SideEffect { logComp(tag, "Composition #${nComp.value++}") }
 
    val articleUiState = CollectBy(viewModel.articleUiStateFlow, tag)
 

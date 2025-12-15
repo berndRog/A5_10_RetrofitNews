@@ -50,11 +50,10 @@ class NewsViewModel(
                _repository.getEverything(  // returns Flow<Result<List<Article>>>
                   searchText = query,
                )
-               // Emit loading state before each new fetch
-               .onStart {
-                  logDebug(TAG, "show loading = true")
-                  updateState(_newsUiStateFlow) { copy(loading = true) }
-               }
+                  .onStart { // Emit loading state before each new fetch
+                     logDebug(TAG, "show loading = true")
+                     updateState(_newsUiStateFlow) { copy(loading = true) }
+                  }
             }
             .collect { result: Result<List<Article>> ->
                // Transform Result<List<Article>> into NewsUiState

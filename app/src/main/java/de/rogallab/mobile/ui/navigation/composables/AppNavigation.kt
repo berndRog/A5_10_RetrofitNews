@@ -42,6 +42,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppNavigation(
+   isPaging: Boolean = Globals.PAGING,
    navViewModel: Nav3ViewModelTopLevel      = koinActivityViewModel { parametersOf(NewsList) },
    newsViewModel: NewsViewModel             = koinActivityViewModel<NewsViewModel>{ parametersOf(navViewModel) },
    newsPagingViewModel: NewsPagingViewModel = koinActivityViewModel<NewsPagingViewModel>{ parametersOf(navViewModel) },
@@ -110,7 +111,8 @@ fun AppNavigation(
 
       entryProvider = entryProvider {
          entry<NewsList> { _ ->
-            if(! Globals.PAGING) {
+            if(! isPaging) {
+               // without paging
                NewsListScreen(
                   navViewModel = navViewModel,
                   newsViewModel = newsViewModel,
@@ -118,6 +120,7 @@ fun AppNavigation(
                   imageLoader = imageLoader,
                )
             } else {
+               // with pahing
                NewsPagingListScreen(
                   navViewModel = navViewModel,
                   newsPagingViewModel = newsPagingViewModel,

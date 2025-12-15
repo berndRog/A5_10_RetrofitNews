@@ -19,7 +19,8 @@ class BearerTokenInterceptor(
       }
 
       // Get current token
-      val token = _tokenProvider() ?: return chain.proceed(original)
+      val token = _tokenProvider()
+         ?: return chain.proceed(original)
 
       // Add Authorization header
       val authenticatedRequest = original.newBuilder()

@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import de.rogallab.mobile.Globals
 import de.rogallab.mobile.ui.base.BaseActivity
 import de.rogallab.mobile.ui.navigation.composables.AppNavigation
 
@@ -19,7 +20,7 @@ class MainActivity : BaseActivity(TAG) {
       setContent {
             AppTheme {
                Surface(modifier = Modifier.fillMaxSize()) {
-                  AppNavigation()
+                  AppNavigation(isPaging = Globals.PAGING)
                }
             }
 

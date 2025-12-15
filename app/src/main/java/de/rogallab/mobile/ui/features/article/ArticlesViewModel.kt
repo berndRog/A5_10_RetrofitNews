@@ -71,6 +71,7 @@ class ArticlesViewModel(
 
    // transform intent into an action
    fun onProcessIntent(intent: ArticleIntent) {
+      logDebug(TAG, "onProcessIntent: $intent")
       when (intent) {
          is ArticleIntent.ShowWebArticle -> showWebArticle(intent.isNews, intent.article)
          is ArticleIntent.SaveArticle -> upsert()

@@ -32,23 +32,14 @@ fun SearchField(
    onSearchTextChange: (String) -> Unit,
    onTriggerSearch: () -> Unit
 ) {
-   var localSearchText by rememberSaveable { mutableStateOf(searchText) }
    val keyboardController = LocalSoftwareKeyboardController.current
-
-   // Keep local state in sync with external state
-   LaunchedEffect(searchText) {
-      localSearchText = searchText
-   }
 
    OutlinedTextField(
       modifier = Modifier
          .padding(bottom = 8.dp)
          .fillMaxWidth(),
-      value = localSearchText,
-      onValueChange = { text ->
-         localSearchText = text
-         onSearchTextChange(text)
-      },
+      value = searchText,
+      onValueChange = { text -> onSearchTextChange(text) },
       label = {
          Text(text = stringResource(R.string.searchtext))
       },
@@ -66,7 +57,6 @@ fun SearchField(
             imageVector = Icons.Outlined.Clear,
             contentDescription = "Clear search text",
             modifier = Modifier.clickable {
-               localSearchText = ""
                onSearchTextChange("")
                onTriggerSearch()
             }

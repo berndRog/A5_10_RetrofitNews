@@ -41,12 +41,15 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
+private val DISPATCHER_IO = named("dispatcherIo")
+
+
 val defModules: Module = module {
    val tag = "<-defModules"
 
    // Provide Dispatchers
    logInfo(tag, "single    -> DispatcherIo:CoroutineDispatcher")
-   single<CoroutineDispatcher>(named("DispatcherIo")) { Dispatchers.IO }
+   single<CoroutineDispatcher>(DISPATCHER_IO) { Dispatchers.IO }
 
    //== data modules ===============================================================================
    // local Room Database -----------------------------------------------------
@@ -65,7 +68,7 @@ val defModules: Module = module {
    single<IArticleRepository> {
       ArticleRepository(
          _articleDao = get<IArticleDao>(),
-         _dispatcher = get<CoroutineDispatcher>(named("DispatcherIo")),
+         _dispatcher = get<CoroutineDispatcher>(DISPATCHER_IO),
       )
    }
 
@@ -133,7 +136,7 @@ val defModules: Module = module {
    single<INewsRepository> {
       NewsRepository(
          _newsApi = get<INewsApi>(),
-         _dispatcher = get<CoroutineDispatcher>(named("DispatcherIo"))
+         _dispatcher = get<CoroutineDispatcher>(DISPATCHER_IO)
       )
    }
 
